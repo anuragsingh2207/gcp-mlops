@@ -128,6 +128,9 @@ ENV/
 env.bak/
 venv.bak/
 
+#GCP Service Account Keys
+*.json
+
 # Spyder project settings
 .spyderproject
 .spyproject

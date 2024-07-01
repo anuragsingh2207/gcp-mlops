@@ -1,0 +1,54 @@
+name: MLOps CICD
+on:
+  push:
+    branches: [main]
+  
+env:
+  GCS_SOURCE: "Source_Bucket"
+  GCS_OUTPUT: "Output_Bucket"
+  
+jobs:
+  jupyter-notebook-cicd:
+    name:  Jupyter Notebook CICD 
+    runs-on: ubuntu-latest
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    steps:
+
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Authenticate with Google Cloud
+        uses: 'google-github-actions/auth@v2'
+        with:
+          service_account: ${{ secrets.SERVICE_ACCOUNT }}
+          workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
+
+      - name: Execute Jupyter Notebook on Vertex AI
+        id: notebook-review
+        uses: google-github-actions/run-vertexai-notebook@v0
+        with:
+            gcs_source_bucket: '${{ env.GCS_SOURCE }}'
+            gcs_output_bucket: '${{ env.GCS_OUTPUT }}'
+            allowlist: '${{ needs.changes.outputs.notebooks_files }}'
+
+#       - name: Install Google Cloud 
+#         uses: BSFishy/pip-action@v1
+#         with:
+#           packages: |
+#             gcloud-notebook-training
+
+#       - name: Fetch Updated Jupyter Notebooks
+#         id: getfile        
+#         run: |
+#           echo "::set-output name=files::$(git diff-tree --no-commit-id --name-only -r ${{ github.sha }} | grep -i .ipynb | xargs)"
+     
+#       - name: Run Jupyter Notebooks
+#         run: |
+#           for i in ${{ steps.getfile.outputs.files }}
+#           do
+#               echo 'Running $i in AI Platform Training'
+#               gcloud-notebook-training --input-notebook $i  --project-id ${{ secrets.PROJECT_ID }}            
+#           done
