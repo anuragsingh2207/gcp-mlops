@@ -17,7 +17,7 @@ jobs:
       contents: 'read'
       id-token: 'write'
     outputs: 
-      notebook_files: ${{ steps.getnotebooks.outputs.notebooks_files }}
+      notebook_files: ${{ steps.getnotebooks.outputs.notebook_files }}
 
     steps:
 
