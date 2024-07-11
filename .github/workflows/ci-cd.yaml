@@ -37,7 +37,7 @@ jobs:
       
       - name: Print Updated Jupyter Notebooks    
         run: |
-          echo 'Updated Notebooks:${{ needs.getnotebooks.outputs.notebooks_files }}'
+          echo 'Updated Notebooks:${{ steps.getnotebooks.outputs.notebook_files }}'
           
       # - name: Execute Jupyter Notebook on Vertex AI
       #   id: notebook-review
