@@ -16,6 +16,8 @@ jobs:
     permissions:
       contents: 'read'
       id-token: 'write'
+    outputs: 
+      notebook_files: ${{ steps.getnotebooks.outputs.notebooks_files }}
 
     steps:
 
@@ -29,26 +31,26 @@ jobs:
           workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
 
       - name: Fetch Updated Jupyter Notebooks
-        id: getfile        
+        id: getnotebooks        
         run: |
-          echo "::set-output name=files::$(git diff-tree --no-commit-id --name-only -r ${{ github.sha }} | grep -i .ipynb | xargs)"
-     
-
+          echo "notebook_files=$(git diff-tree --no-commit-id --name-only -r ${{ github.sha }} | grep -i .ipynb | xargs)" >> $GITHUB_OUTPUT
+      
+      - name: Print Updated Jupyter Notebooks    
+        run: |
+          echo 'Updated Notebooks:${{ needs.getnotebooks.outputs.notebooks_files }}'
+          
       # - name: Execute Jupyter Notebook on Vertex AI
       #   id: notebook-review
       #   uses: google-github-actions/run-vertexai-notebook@v0
       #   with:
       #       gcs_source_bucket: '${{ env.GCS_SOURCE }}'
       #       gcs_output_bucket: '${{ env.GCS_OUTPUT }}'
-      #       allowlist: '${{ needs.changes.outputs.notebooks_files }}'
+      #       allowlist: '${{ needs.changes.outputs.notebook_files }}'
 
-
-
-
-#       - name: Run Jupyter Notebooks
-#         run: |
-#           for i in ${{ steps.getfile.outputs.files }}
-#           do
-#               echo 'Running $i in AI Platform Training'
-#               gcloud-notebook-training --input-notebook $i  --project-id ${{ secrets.PROJECT_ID }}            
-#           done
+      # - name: Run Jupyter Notebooks
+      #   run: |
+      #     for i in ${{ steps.getfile.outputs.files }}
+      #     do
+      #         echo 'Running $i in AI Platform Training'
+      #         gcloud-notebook-training --input-notebook $i  --project-id ${{ secrets.PROJECT_ID }}            
+      #     done
