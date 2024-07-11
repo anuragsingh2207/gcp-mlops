@@ -2,8 +2,8 @@ name: MLOps CICD
 on:
   push:
     branches: [main]
-    paths:
-    - '*.ipynb'
+    # paths:
+    # - '*.ipynb'
   
 env:
   GCS_SOURCE: "Source_Bucket"
