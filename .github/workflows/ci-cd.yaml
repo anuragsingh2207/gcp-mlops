@@ -33,17 +33,23 @@ jobs:
       - name: Fetch Updated Jupyter Notebooks
         id: getnotebooks        
         run: |
-          echo "Printing changed files "
-          git diff-tree --no-commit-id --name-only -r $GITHUB_SHA | 
+          echo "Printing GitHub SHA:$GITHUB_SHA"
+          echo "Fetching SHA manually..."
+          SHA="$(git rev-parse HEAD)"
+          echo "Manually fetched SHA: $SHA"
+          echo "Listing updated files..."
+          git diff-tree --no-commit-id --name-only -r $SHA
+          echo "Listing updated notebooks..."
+          git diff-tree --no-commit-id --name-only -r $SHA| grep -i .ipynb | xargs
           echo "Setting up gha env var"
-          echo "notebook_files=$(git diff-tree --no-commit-id --name-only -r $GITHUB_SHA | grep -i .ipynb | xargs)" >> $GITHUB_ENV
-          #echo "notebook_files=$(git diff-tree --no-commit-id --name-only -r $GITHUB_SHA | grep -i .ipynb | xargs)" >> $GITHUB_OUTPUT
-          #echo "notebook_files_env=$(git diff-tree --no-commit-id --name-only -r $GITHUB_SHA | grep -i .ipynb | xargs)" >> $GITHUB_ENV
+          echo "notebook_files_env=$(git diff-tree --no-commit-id --name-only -r $SHA | grep -i .ipynb | xargs)" >> $GITHUB_ENV
+          echo "notebook_files=$(git diff-tree --no-commit-id --name-only -r $SHA | grep -i .ipynb | xargs)" >> $GITHUB_OUTPUT
+          
          
       - name: Print Updated Jupyter Notebooks    
         run: |
-          #echo 'Updated Notebooks Output :${{ needs.getnotebooks.outputs.notebook_files }}'
-          echo 'Updated Notebooks Env Var :${{ env.notebook_files }}'
+          echo 'Updated Notebooks Output :${{ needs.getnotebooks.outputs.notebook_files }}'
+          echo 'Updated Notebooks Env Var :${{ env.notebook_files_env }}'
           
       # - name: Execute Jupyter Notebook on Vertex AI
       #   id: notebook-review
