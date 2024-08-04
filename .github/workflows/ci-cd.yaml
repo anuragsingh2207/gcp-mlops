@@ -33,14 +33,15 @@ jobs:
       - name: Fetch Updated Jupyter Notebooks
         id: getnotebooks        
         run: |
-          echo "Printing GitHub SHA:$GITHUB_SHA"
+          echo "Printing GitHub SHA: $GITHUB_SHA"
           echo "Listing updated files..."
-          git diff-tree --no-commit-id --name-only -r $GITHUB_SHA
+          updated_files=$(git diff-tree --no-commit-id --name-only -r $GITHUB_SHA)
+          echo $updated_files
           echo "Listing updated notebooks..."
-          git diff-tree --no-commit-id --name-only -r $GITHUB_SHA| grep -i .ipynb | xargs
-          echo "notebook_files_env=$(git diff-tree --no-commit-id --name-only -r $GITHUB_SHA | grep -i .ipynb | xargs)" >> $GITHUB_ENV
-          echo "notebook_files=$(git diff-tree --no-commit-id --name-only -r $GITHUB_SHA | grep -i .ipynb | xargs)" >> $GITHUB_OUTPUT
- 
+          updated_notebooks=$(echo $updated_files | grep -i '\.ipynb$')
+          echo $updated_notebooks
+          echo "notebook_files_env=$updated_notebooks" >> $GITHUB_ENV
+          echo "notebook_files=$updated_notebooks" >> $GITHUB_OUTPUT
           
          
       - name: Print Updated Jupyter Notebooks    
