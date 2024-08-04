@@ -46,6 +46,7 @@ jobs:
           echo "Printing GitHub SHA: $GITHUB_SHA"
           updated_files=$(git diff-tree --no-commit-id --name-only -r $GITHUB_SHA)
           echo "UPDATED_FILES=$(echo $updated_files | tr '\n' ' ')" >> $GITHUB_ENV
+          set -x
 
       - name: Use Updated Files
         run: |
