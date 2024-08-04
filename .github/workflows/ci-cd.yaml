@@ -34,20 +34,16 @@ jobs:
         id: getnotebooks        
         run: |
           echo "Printing GitHub SHA: $GITHUB_SHA"
-          echo "Listing updated files..."
-          updated_files=$(git diff-tree --no-commit-id --name-only -r $GITHUB_SHA)
-          echo $updated_files
-          echo "Listing updated notebooks..."
-          updated_notebooks=$(echo $updated_files | grep -i '\.ipynb$')
-          echo $updated_notebooks
-          echo "notebook_files_env=$updated_notebooks" >> $GITHUB_ENV
-          echo "notebook_files=$updated_notebooks" >> $GITHUB_OUTPUT
+          echo "UPDATED_FILES=$(git diff-tree --no-commit-id --name-only -r $GITHUB_SHA)" >> $GITHUB_ENV
+          echo "Listing updated files: ${{ env.UPDATED_FILES }}"
+          echo "UPDATED_NOTEBOOKS=$(echo $updated_files | grep -i '\.ipynb$')" >> $GITHUB_ENV
+          echo "Listing updated notebooks: ${{ env.UPDATED_NOTEBOOKS }}"
           
          
-      - name: Print Updated Jupyter Notebooks    
-        run: |
-          echo 'Updated Notebooks Output :${{ needs.getnotebooks.outputs.notebook_files }}'
-          echo 'Updated Notebooks Env Var :${{ env.notebook_files_env }}'
+      # - name: Print Updated Jupyter Notebooks    
+      #   run: |
+      #     echo 'Updated Notebooks Output :${{ needs.getnotebooks.outputs.notebook_files }}'
+      #     echo 'Updated Notebooks Env Var :${{ env.notebook_files_env }}'
           
       # - name: Execute Jupyter Notebook on Vertex AI
       #   id: notebook-review
