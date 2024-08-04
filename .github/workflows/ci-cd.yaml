@@ -44,20 +44,13 @@ jobs:
         run: |
           set +x
           echo "Printing GitHub SHA: $GITHUB_SHA"
-
-        # Use variable to hold the command output temporarily
           updated_files=$(git diff-tree --no-commit-id --name-only -r $GITHUB_SHA)
-
-        # Save to GITHUB_ENV, replace newline with spaces for better handling
           echo "UPDATED_FILES=$(echo $updated_files | tr '\n' ' ')" >> $GITHUB_ENV
 
-        # Add a newline for separation and clarity
       - name: Use Updated Files
         run: |
           echo "Listing updated files: $UPDATED_FILES"
           updated_notebooks=$(echo $UPDATED_FILES | grep -i '\.ipynb$')
-
-        # Again, saving the output environment variable
           echo "UPDATED_NOTEBOOKS=$(echo $updated_notebooks | tr '\n' ' ')" >> $GITHUB_ENV
 
       - name: List Updated Notebooks
