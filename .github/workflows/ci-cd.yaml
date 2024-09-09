@@ -46,6 +46,7 @@ jobs:
 
       - name: Identify Modified Jupyter Notebooks
         run: |
+          set +x 
           # Get the list of all Jupyter Notebook files modified in the last commit(s) of the current branch
           CHANGED_NOTEBOOKS=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '\.ipynb$')
           
