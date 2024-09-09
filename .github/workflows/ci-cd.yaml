@@ -24,39 +24,41 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Authenticate with Google Cloud
-        uses: 'google-github-actions/auth@v2'
-        with:
-          service_account: ${{ secrets.SERVICE_ACCOUNT }}
-          workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
+      # - name: Authenticate with Google Cloud
+      #   uses: 'google-github-actions/auth@v2'
+      #   with:
+      #     service_account: ${{ secrets.SERVICE_ACCOUNT }}
+      #     workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
 
+      # Fetching SHA 
       # - name: Fetch Updated Jupyter Notebooks
       #   id: getnotebooks        
       #   run: |
+      #     set +x
       #     echo "Printing GitHub SHA: $GITHUB_SHA"
-      #     echo "UPDATED_FILES=$(git diff-tree --no-commit-id --name-only -r $GITHUB_SHA)" >> $GITHUB_ENV
-      #     echo "Listing updated files: ${{ env.UPDATED_FILES }}"
-      #     echo "UPDATED_NOTEBOOKS=$(echo $updated_files | grep -i '\.ipynb$')" >> $GITHUB_ENV
-      #     echo "Listing updated notebooks: ${{ env.UPDATED_NOTEBOOKS }}"
+      #     updated_files=$(git diff-tree --no-commit-id --name-only -r $GITHUB_SHA)
+      #     echo "UPDATED_FILES=$(echo $updated_files | tr '\n' ' ')" >> $GITHUB_ENV
+      #     set -x
 
-      - name: Fetch Updated Jupyter Notebooks
-        id: getnotebooks        
-        run: |
-          set +x
-          echo "Printing GitHub SHA: $GITHUB_SHA"
-          updated_files=$(git diff-tree --no-commit-id --name-only -r $GITHUB_SHA)
-          echo "UPDATED_FILES=$(echo $updated_files | tr '\n' ' ')" >> $GITHUB_ENV
-          set -x
+      # - name: List Updated Notebooks
+      #   run: |
+      #     echo "Listing updated notebooks: $UPDATED_NOTEBOOKS"
 
-      - name: Use Updated Files
+      - name: Identify Modified Jupyter Notebooks
         run: |
-          echo "Listing updated files: $UPDATED_FILES"
-          updated_notebooks=$(echo $UPDATED_FILES | grep -i '\.ipynb$')
-          echo "UPDATED_NOTEBOOKS=$(echo $updated_notebooks | tr '\n' ' ')" >> $GITHUB_ENV
+          # Get the list of all Jupyter Notebook files modified in the last commit(s) of the current branch
+          CHANGED_NOTEBOOKS=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '\.ipynb$')
+          
+          if [ -z "$CHANGED_NOTEBOOKS" ]; then
+            echo "No Jupyter notebooks have been modified in this push."
+          else
+            echo "Modified Jupyter notebooks in this push:"
+            echo "$CHANGED_NOTEBOOKS"
+          fi
 
-      - name: List Updated Notebooks
-        run: |
-          echo "Listing updated notebooks: $UPDATED_NOTEBOOKS"
+          # Set the output variable for modified notebooks
+          echo "changed_notebooks=$CHANGED_NOTEBOOKS" >> $GITHUB_ENV
+
           
          
       # - name: Print Updated Jupyter Notebooks    
