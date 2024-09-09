@@ -23,6 +23,8 @@ jobs:
 
       - name: Checkout Code
         uses: actions/checkout@v3
+        with:
+          fetch-depth: '0'
 
       # - name: Authenticate with Google Cloud
       #   uses: 'google-github-actions/auth@v2'
@@ -46,10 +48,10 @@ jobs:
 
       - name: Identify Modified Jupyter Notebooks
         run: |
-          set +x 
-          # Get the list of all Jupyter Notebook files modified in the last commit(s) of the current branch
+          set +e  # Do not exit immediately on error
           CHANGED_NOTEBOOKS=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '\.ipynb$')
-          
+          set -e  # Turn back on exit immediately
+
           if [ -z "$CHANGED_NOTEBOOKS" ]; then
             echo "No Jupyter notebooks have been modified in this push."
           else
@@ -57,7 +59,6 @@ jobs:
             echo "$CHANGED_NOTEBOOKS"
           fi
 
-          # Set the output variable for modified notebooks
           echo "changed_notebooks=$CHANGED_NOTEBOOKS" >> $GITHUB_ENV
 
           
