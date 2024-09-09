@@ -32,20 +32,7 @@ jobs:
       #     service_account: ${{ secrets.SERVICE_ACCOUNT }}
       #     workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
 
-      # Fetching SHA 
-      # - name: Fetch Updated Jupyter Notebooks
-      #   id: getnotebooks        
-      #   run: |
-      #     set +x
-      #     echo "Printing GitHub SHA: $GITHUB_SHA"
-      #     updated_files=$(git diff-tree --no-commit-id --name-only -r $GITHUB_SHA)
-      #     echo "UPDATED_FILES=$(echo $updated_files | tr '\n' ' ')" >> $GITHUB_ENV
-      #     set -x
-
-      # - name: List Updated Notebooks
-      #   run: |
-      #     echo "Listing updated notebooks: $UPDATED_NOTEBOOKS"
-
+      
       - name: Identify Modified Jupyter Notebooks
         run: |
           set +e  # Do not exit immediately on error
@@ -61,13 +48,6 @@ jobs:
 
           echo "changed_notebooks=$CHANGED_NOTEBOOKS" >> $GITHUB_ENV
 
-          
-         
-      # - name: Print Updated Jupyter Notebooks    
-      #   run: |
-      #     echo 'Updated Notebooks Output :${{ needs.getnotebooks.outputs.notebook_files }}'
-      #     echo 'Updated Notebooks Env Var :${{ env.notebook_files_env }}'
-          
       # - name: Execute Jupyter Notebook on Vertex AI
       #   id: notebook-review
       #   uses: google-github-actions/run-vertexai-notebook@v0
@@ -75,11 +55,3 @@ jobs:
       #       gcs_source_bucket: '${{ env.GCS_SOURCE }}'
       #       gcs_output_bucket: '${{ env.GCS_OUTPUT }}'
       #       allowlist: '${{ needs.getnotebooks.outputs.notebook_files }}'
-
-      # - name: Run Jupyter Notebooks
-      #   run: |
-      #     for i in ${{ steps.getfile.outputs.files }}
-      #     do
-      #         echo 'Running $i in AI Platform Training'
-      #         gcloud-notebook-training --input-notebook $i  --project-id ${{ secrets.PROJECT_ID }}            
-      #     done
