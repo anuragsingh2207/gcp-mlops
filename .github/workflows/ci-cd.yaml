@@ -26,11 +26,11 @@ jobs:
         with:
           fetch-depth: '0'
 
-      # - name: Authenticate with Google Cloud
-      #   uses: 'google-github-actions/auth@v2'
-      #   with:
-      #     service_account: ${{ secrets.SERVICE_ACCOUNT }}
-      #     workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
+      - name: Authenticate with Google Cloud
+        uses: 'google-github-actions/auth@v2'
+        with:
+          service_account: ${{ secrets.SERVICE_ACCOUNT }}
+          workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
 
       
       - name: Identify Modified Jupyter Notebooks
