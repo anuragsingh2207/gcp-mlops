@@ -74,10 +74,11 @@ docs/_build/
 # PyBuilder
 .pybuilder/
 target/
+.pyenv/
 
 # Jupyter Notebook
 .ipynb_checkpoints
-.DS_Store
+.DS_Store/
 
 # IPython
 profile_default/
