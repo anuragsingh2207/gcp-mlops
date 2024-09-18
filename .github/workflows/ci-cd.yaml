@@ -113,12 +113,12 @@ jobs:
          echo "Successfully uploaded Dataset ..."
          echo "Uploading Source Code (Jupyter Notebook) ..."
          cd  ${GITHUB_WORKSPACE}/src/ 
-         gsutil cp ${{ env.changed_notebooks }} gs://${{ env.GCS_SOURCE }}/src/
+         gsutil cp *.ipynb gs://${{ env.GCS_SOURCE }}/src/
 
       - name: Execute Jupyter Notebook on Vertex AI
         id: notebook-review
         uses: google-github-actions/run-vertexai-notebook@v0
         with:
-            gcs_source_bucket: '${{ env.GCS_SOURCE }}'
-            gcs_output_bucket: '${{ env.GCS_OUTPUT }}'
-            allowlist: ${{ env.changed_notebooks }}
+            gcs_source_bucket: ${{ env.GCS_SOURCE }}
+            gcs_output_bucket: ${{ env.GCS_OUTPUT }}
+            allowlist: Salary_Linear_Regression.ipynb
