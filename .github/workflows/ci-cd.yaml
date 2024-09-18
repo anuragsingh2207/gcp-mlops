@@ -73,9 +73,9 @@ jobs:
                 else
                   echo "Uploading $dataset to GCS..."
                   gsutil cp "$dataset" gs://${GCS_SOURCE}/dataset/
+                  echo "Successfully processed the dataset list for uploads."
                 fi
               done < changed_dataset.txt
-              echo "Successfully processed the dataset list for uploads."
             else
               echo "No datasets to upload or the file is empty."
             fi
@@ -88,9 +88,9 @@ jobs:
                 else
                   echo "Uploading $notebook to GCS..."
                   gsutil cp "$notebook" gs://${GCS_SOURCE}/src/
+                  echo "Successfully processed the notebook list for uploads."
                 fi
               done < changed_notebook.txt
-              echo "Successfully processed the notebook list for uploads."
             else
               echo "No Jupyter notebooks to upload or the file is empty."
             fi
