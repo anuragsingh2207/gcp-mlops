@@ -64,8 +64,6 @@ jobs:
           set -e  # Turn back on "exit immediately"
       
       - name: Upload Modified Files to GCS
-        env:
-          GCS_SOURCE: ${{ secrets.GCS_SOURCE }}
         run: |
           # Upload modified datasets
           if [ -s changed_dataset.txt ]; then
@@ -75,10 +73,10 @@ jobs:
             done < changed_dataset.txt
             echo "Successfully uploaded all modified datasets."
           else
-            echo "No datasets to upload."
+            echo "No datasets to upload or the file is empty."
           fi
 
-          # Upload modified Jupyter notebooks
+          # Assuming a similar step for Jupyter notebooks
           if [ -s changed_notebook.txt ]; then
             while IFS= read -r notebook; do
               echo "Uploading $notebook to GCS..."
@@ -86,8 +84,11 @@ jobs:
             done < changed_notebook.txt
             echo "Successfully uploaded all modified notebooks."
           else
-            echo "No Jupyter notebooks to upload."
-          fi
+            echo "No Jupyter notebooks to upload or the file is empty."
+          fiupyter notebooks to upload."
+                fi
+
+          
       # - name: Execute Jupyter Notebook on Vertex AI
       #   id: notebook-review
       #   uses: google-github-actions/run-vertexai-notebook@v0
