@@ -37,83 +37,83 @@ jobs:
         with:
           version: '>= 363.0.0'
 
-      - name: Identify Modified Files
-        run: |
-          echo "Checking for Modified Files..."
-          set +e  # Do not exit immediately on error
+      # - name: Identify Modified Files
+      #   run: |
+      #     echo "Checking for Modified Files..."
+      #     set +e  # Do not exit immediately on error
           
-          # Identify modified Jupyter Notebooks
-          CHANGED_NOTEBOOKS=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '^src/.*\.ipynb$')
-          echo "$CHANGED_NOTEBOOKS" > changed_notebook.txt
-          if [ -s changed_notebook.txt ]; then
-            echo "Modified Jupyter Notebooks:"
-            cat changed_notebook.txt
-          else
-            echo "No Jupyter notebooks have been modified."
-          fi
+      #     # Identify modified Jupyter Notebooks
+      #     CHANGED_NOTEBOOKS=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '^src/.*\.ipynb$')
+      #     echo "$CHANGED_NOTEBOOKS" > changed_notebook.txt
+      #     if [ -s changed_notebook.txt ]; then
+      #       echo "Modified Jupyter Notebooks:"
+      #       cat changed_notebook.txt
+      #     else
+      #       echo "No Jupyter notebooks have been modified."
+      #     fi
           
-          # Identify modified datasets
-          CHANGED_DATASETS=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '^dataset/.*\.csv$')
-          echo "$CHANGED_DATASETS" > changed_dataset.txt
-          if [ -s changed_dataset.txt ]; then
-            echo "Modified Datasets:"
-            cat changed_dataset.txt
-          else
-            echo "No datasets have been modified."
-          fi
-          set -e  # Turn back on "exit immediately"
+      #     # Identify modified datasets
+      #     CHANGED_DATASETS=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '^dataset/.*\.csv$')
+      #     echo "$CHANGED_DATASETS" > changed_dataset.txt
+      #     if [ -s changed_dataset.txt ]; then
+      #       echo "Modified Datasets:"
+      #       cat changed_dataset.txt
+      #     else
+      #       echo "No datasets have been modified."
+      #     fi
+      #     set -e  # Turn back on "exit immediately"
       
-      - name: Upload Modified Files to GCS
-        run: |
-          CHANGED_NOTEBOOKS=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '\.ipynb$')
-          set -e  
-          if [ -z "$CHANGED_NOTEBOOKS" ]; then
-            echo "No Jupyter notebooks have been modified in this push."
-          else
-            echo "Modified Jupyter notebooks in this push:"
-            echo "$CHANGED_NOTEBOOKS"
-          fi
-          echo "changed_notebooks=$CHANGED_NOTEBOOKS" >> $GITHUB_ENV
+      # - name: Upload Modified Files to GCS
+      #   run: |
+      #     CHANGED_NOTEBOOKS=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '\.ipynb$')
+      #     set -e  
+      #     if [ -z "$CHANGED_NOTEBOOKS" ]; then
+      #       echo "No Jupyter notebooks have been modified in this push."
+      #     else
+      #       echo "Modified Jupyter notebooks in this push:"
+      #       echo "$CHANGED_NOTEBOOKS"
+      #     fi
+      #     echo "changed_notebooks=$CHANGED_NOTEBOOKS" >> $GITHUB_ENV
 
-            # # Upload modified datasets
-            # if [ -s changed_dataset.txt ]; then
-            #   while IFS= read -r dataset; do
-            #     if [ -z "$dataset" ]; then
-            #       echo "Skipped an empty line entry, no dataset to upload."
-            #     else
-            #       echo "Uploading $dataset to GCS..."
-            #       gsutil cp "$dataset" gs://${GCS_SOURCE}/dataset/
-            #       echo "Successfully processed the dataset list for uploads."
-            #     fi
-            #   done < changed_dataset.txt
-            # else
-            #   echo "No datasets to upload or the file is empty."
-            # fi
+      #       # # Upload modified datasets
+      #       # if [ -s changed_dataset.txt ]; then
+      #       #   while IFS= read -r dataset; do
+      #       #     if [ -z "$dataset" ]; then
+      #       #       echo "Skipped an empty line entry, no dataset to upload."
+      #       #     else
+      #       #       echo "Uploading $dataset to GCS..."
+      #       #       gsutil cp "$dataset" gs://${GCS_SOURCE}/dataset/
+      #       #       echo "Successfully processed the dataset list for uploads."
+      #       #     fi
+      #       #   done < changed_dataset.txt
+      #       # else
+      #       #   echo "No datasets to upload or the file is empty."
+      #       # fi
 
-            # # Assuming a similar step for Jupyter notebooks
-            # if [ -s changed_notebook.txt ]; then
-            #   while IFS= read -r notebook; do
-            #     if [ -z "$notebook" ]; then
-            #       echo "Skipped an empty line entry, no notebook to upload."
-            #     else
-            #       echo "Uploading $notebook to GCS..."
-            #       gsutil cp "$notebook" gs://${GCS_SOURCE}/src/
-            #       echo "Successfully processed the notebook list for uploads."
-            #     fi
-            #   done < changed_notebook.txt
-            # else
-            #   echo "No Jupyter notebooks to upload or the file is empty."
-            # fi
+      #       # # Assuming a similar step for Jupyter notebooks
+      #       # if [ -s changed_notebook.txt ]; then
+      #       #   while IFS= read -r notebook; do
+      #       #     if [ -z "$notebook" ]; then
+      #       #       echo "Skipped an empty line entry, no notebook to upload."
+      #       #     else
+      #       #       echo "Uploading $notebook to GCS..."
+      #       #       gsutil cp "$notebook" gs://${GCS_SOURCE}/src/
+      #       #       echo "Successfully processed the notebook list for uploads."
+      #       #     fi
+      #       #   done < changed_notebook.txt
+      #       # else
+      #       #   echo "No Jupyter notebooks to upload or the file is empty."
+      #       # fi
 
-      - name: Upload Dataset and Source Code to GCS Bucket
-        run: |
-         echo "Uploading Dataset ..."
-         cd  ${GITHUB_WORKSPACE}/dataset/  
-         gsutil cp *.csv gs://${{ env.GCS_SOURCE }}/dataset/
-         echo "Successfully uploaded Dataset ..."
-         echo "Uploading Source Code (Jupyter Notebook) ..."
-         cd  ${GITHUB_WORKSPACE}/src/ 
-         gsutil cp *.ipynb gs://${{ env.GCS_SOURCE }}/src/
+      # - name: Upload Dataset and Source Code to GCS Bucket
+      #   run: |
+      #    echo "Uploading Dataset ..."
+      #    cd  ${GITHUB_WORKSPACE}/dataset/  
+      #    gsutil cp *.csv gs://${{ env.GCS_SOURCE }}/dataset/
+      #    echo "Successfully uploaded Dataset ..."
+      #    echo "Uploading Source Code (Jupyter Notebook) ..."
+      #    cd  ${GITHUB_WORKSPACE}/src/ 
+      #    gsutil cp *.ipynb gs://${{ env.GCS_SOURCE }}/src/
 
       - name: Execute Jupyter Notebook on Vertex AI
         id: notebook-review
@@ -121,4 +121,4 @@ jobs:
         with:
             gcs_source_bucket: ${{ env.GCS_SOURCE }}
             gcs_output_bucket: ${{ env.GCS_OUTPUT }}
-            allowlist: Salary_Linear_Regression.ipynb
+            allowlist: src/Salary_Linear_Regression.ipynb
