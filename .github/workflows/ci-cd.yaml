@@ -37,63 +37,57 @@ jobs:
         with:
           version: '>= 363.0.0'
 
-      - name: Identify Modified Jupyter Notebooks
+      - name: Identify Modified Files
         run: |
+          echo "Checking for Modified Files..."
           set +e  # Do not exit immediately on error
-          CHANGED_NOTEBOOKS=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '\.ipynb$')
-          set -e  # Turn back on exit immediately
-          if [ -z "$CHANGED_NOTEBOOKS" ]; then
-            echo "No Jupyter notebooks have been modified in this push."
+          
+          # Identify modified Jupyter Notebooks
+          CHANGED_NOTEBOOKS=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '^src/.*\.ipynb$')
+          echo "$CHANGED_NOTEBOOKS" > changed_notebook.txt
+          if [ -s changed_notebook.txt ]; then
+            echo "Modified Jupyter Notebooks:"
+            cat changed_notebook.txt
           else
-            echo "Modified Jupyter notebooks in this push:"
-            echo "$CHANGED_NOTEBOOKS"
-            echo "$CHANGED_NOTEBOOKS" >> changed_notebook.txt
+            echo "No Jupyter notebooks have been modified."
           fi
-          CHANGED_DATASET=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '\.csv$')
-          set -e  # Turn back on exit immediately
-          if [ -z "$CHANGED_DATASET" ]; then
-            echo "No Datasets have been modified in this push."
+          
+          # Identify modified datasets
+          CHANGED_DATASETS=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '^dataset/.*\.csv$')
+          echo "$CHANGED_DATASETS" > changed_dataset.txt
+          if [ -s changed_dataset.txt ]; then
+            echo "Modified Datasets:"
+            cat changed_dataset.txt
           else
-            echo "Modified Datasets  in this push:"
-            echo "$CHANGED_DATASET"
-            echo "$CHANGED_DATASET" >> changed_dataset.txt
+            echo "No datasets have been modified."
           fi
+          set -e  # Turn back on "exit immediately"
       
-      - name: Upload Dataset and Source Code to GCS Bucket
+      - name: Upload Modified Files to GCS
+        env:
+          GCS_SOURCE: ${{ secrets.GCS_SOURCE }}
         run: |
-            
-            DATASET="changed_dataset.txt"
-            if [[ -f "$DATASET" ]]; then
-              while IFS= read -r line; do
-                  export CURRENT_DATASET="$line"
-                  echo "Processing: $CURRENT_DATASET"
-                  gsutil cp ../dataset/$CURRENT_DATASET gs://${{ env.GCS_SOURCE }}/dataset/  
-              done < "$FILE"  
+          # Upload modified datasets
+          if [ -s changed_dataset.txt ]; then
+            while IFS= read -r dataset; do
+              echo "Uploading $dataset to GCS..."
+              gsutil cp $dataset gs://${GCS_SOURCE}/dataset/
+            done < changed_dataset.txt
+            echo "Successfully uploaded all modified datasets."
+          else
+            echo "No datasets to upload."
+          fi
 
-            else
-              echo "Error: File does not exist."
-            fi
-
-            echo "Successfully uploaded Source Code ..."
-            echo "Uploading Dataset ..."
-            cd  ${GITHUB_WORKSPACE}/dataset/  
-            gsutil cp ../dataset/*.csv gs://${{ env.GCS_SOURCE }}/dataset/
-            echo "Successfully uploaded Dataset ..."
-            echo "Uploading Source Code (Jupyter Notebook) ..."
-            
-            FILE="changed_notebook.txt"
-            if [[ -f "$FILE" ]]; then
-              while IFS= read -r line; do
-                  export CURRENT_LINE="$line"
-                  echo "Processing: $CURRENT_LINE"
-                  gsutil cp ../src/$CURRENT_LINE gs://${{ env.GCS_SOURCE }}/src/  
-              done < "$FILE"  
-
-            else
-              echo "Error: File does not exist."
-            fi
-            echo "Successfully uploaded Source Code ..."
-
+          # Upload modified Jupyter notebooks
+          if [ -s changed_notebook.txt ]; then
+            while IFS= read -r notebook; do
+              echo "Uploading $notebook to GCS..."
+              gsutil cp $notebook gs://${GCS_SOURCE}/src/
+            done < changed_notebook.txt
+            echo "Successfully uploaded all modified notebooks."
+          else
+            echo "No Jupyter notebooks to upload."
+          fi
       # - name: Execute Jupyter Notebook on Vertex AI
       #   id: notebook-review
       #   uses: google-github-actions/run-vertexai-notebook@v0
