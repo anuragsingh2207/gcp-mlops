@@ -65,41 +65,60 @@ jobs:
       
       - name: Upload Modified Files to GCS
         run: |
-            # Upload modified datasets
-            if [ -s changed_dataset.txt ]; then
-              while IFS= read -r dataset; do
-                if [ -z "$dataset" ]; then
-                  echo "Skipped an empty line entry, no dataset to upload."
-                else
-                  echo "Uploading $dataset to GCS..."
-                  gsutil cp "$dataset" gs://${GCS_SOURCE}/dataset/
-                  echo "Successfully processed the dataset list for uploads."
-                fi
-              done < changed_dataset.txt
-            else
-              echo "No datasets to upload or the file is empty."
-            fi
+          CHANGED_NOTEBOOKS=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '\.ipynb$')
+          set -e  
+          if [ -z "$CHANGED_NOTEBOOKS" ]; then
+            echo "No Jupyter notebooks have been modified in this push."
+          else
+            echo "Modified Jupyter notebooks in this push:"
+            echo "$CHANGED_NOTEBOOKS"
+          fi
+          echo "changed_notebooks=$CHANGED_NOTEBOOKS" >> $GITHUB_ENV
 
-            # Assuming a similar step for Jupyter notebooks
-            if [ -s changed_notebook.txt ]; then
-              while IFS= read -r notebook; do
-                if [ -z "$notebook" ]; then
-                  echo "Skipped an empty line entry, no notebook to upload."
-                else
-                  echo "Uploading $notebook to GCS..."
-                  gsutil cp "$notebook" gs://${GCS_SOURCE}/src/
-                  echo "Successfully processed the notebook list for uploads."
-                fi
-              done < changed_notebook.txt
-            else
-              echo "No Jupyter notebooks to upload or the file is empty."
-            fi
+            # # Upload modified datasets
+            # if [ -s changed_dataset.txt ]; then
+            #   while IFS= read -r dataset; do
+            #     if [ -z "$dataset" ]; then
+            #       echo "Skipped an empty line entry, no dataset to upload."
+            #     else
+            #       echo "Uploading $dataset to GCS..."
+            #       gsutil cp "$dataset" gs://${GCS_SOURCE}/dataset/
+            #       echo "Successfully processed the dataset list for uploads."
+            #     fi
+            #   done < changed_dataset.txt
+            # else
+            #   echo "No datasets to upload or the file is empty."
+            # fi
 
-          
-      # - name: Execute Jupyter Notebook on Vertex AI
-      #   id: notebook-review
-      #   uses: google-github-actions/run-vertexai-notebook@v0
-      #   with:
-      #       gcs_source_bucket: '${{ env.GCS_SOURCE }}'
-      #       gcs_output_bucket: '${{ env.GCS_OUTPUT }}'
-      #       allowlist: '${{ needs.getnotebooks.outputs.notebook_files }}'
+            # # Assuming a similar step for Jupyter notebooks
+            # if [ -s changed_notebook.txt ]; then
+            #   while IFS= read -r notebook; do
+            #     if [ -z "$notebook" ]; then
+            #       echo "Skipped an empty line entry, no notebook to upload."
+            #     else
+            #       echo "Uploading $notebook to GCS..."
+            #       gsutil cp "$notebook" gs://${GCS_SOURCE}/src/
+            #       echo "Successfully processed the notebook list for uploads."
+            #     fi
+            #   done < changed_notebook.txt
+            # else
+            #   echo "No Jupyter notebooks to upload or the file is empty."
+            # fi
+
+      - name: Upload Dataset and Source Code to GCS Bucket
+        run: |
+         echo "Uploading Dataset ..."
+         cd  ${GITHUB_WORKSPACE}/dataset/  
+         gsutil cp *.csv gs://${{ env.GCS_SOURCE }}/dataset/
+         echo "Successfully uploaded Dataset ..."
+         echo "Uploading Source Code (Jupyter Notebook) ..."
+         cd  ${GITHUB_WORKSPACE}/src/ 
+         gsutil cp ${{ env.changed_notebooks }} gs://${{ env.GCS_SOURCE }}/src/
+
+      - name: Execute Jupyter Notebook on Vertex AI
+        id: notebook-review
+        uses: google-github-actions/run-vertexai-notebook@v0
+        with:
+            gcs_source_bucket: '${{ env.GCS_SOURCE }}'
+            gcs_output_bucket: '${{ env.GCS_OUTPUT }}'
+            allowlist: ${{ env.changed_notebooks }}
