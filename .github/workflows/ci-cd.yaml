@@ -6,8 +6,8 @@ on:
     # - '*.ipynb'
   
 env:
-  GCS_SOURCE: "thermal-imprint-425305-u1-source-bucket"
-  GCS_OUTPUT: "thermal-imprint-425305-u1-output-bucket"
+  GCS_SOURCE: "vocal-partition-435815-p8-source-bucket"
+  GCS_OUTPUT: "vocal-partition-435815-p8-output-bucket"
   
 jobs:
   jupyter-notebook-cicd:
@@ -32,21 +32,34 @@ jobs:
           service_account: ${{ secrets.SERVICE_ACCOUNT }}
           workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
 
-      
+      - name: Set up gcloud SDK
+        uses: 'google-github-actions/setup-gcloud@v2'
+        with:
+          version: '>= 363.0.0'
+
       - name: Identify Modified Jupyter Notebooks
         run: |
           set +e  # Do not exit immediately on error
           CHANGED_NOTEBOOKS=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '\.ipynb$')
           set -e  # Turn back on exit immediately
-
           if [ -z "$CHANGED_NOTEBOOKS" ]; then
             echo "No Jupyter notebooks have been modified in this push."
           else
             echo "Modified Jupyter notebooks in this push:"
             echo "$CHANGED_NOTEBOOKS"
           fi
-
           echo "changed_notebooks=$CHANGED_NOTEBOOKS" >> $GITHUB_ENV
+
+      
+      - name: Upload Dataset and Source Code to GCS Bucket
+        run: |
+         echo "Uploading Dataset ..."
+         cd  ${GITHUB_WORKSPACE}/dataset/  
+         gsutil cp *.csv gs://${{ env.GCS_SOURCE }}/dataset/
+         echo "Successfully uploaded Dataset ..."
+         echo "Uploading Source Code (Jupyter Notebook) ..."
+         cd  ${GITHUB_WORKSPACE}/src/ 
+         gsutil cp ${{ env.changed_notebooks }} gs://${{ env.GCS_SOURCE }}/src/
 
       # - name: Execute Jupyter Notebook on Vertex AI
       #   id: notebook-review
