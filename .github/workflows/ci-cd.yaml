@@ -47,19 +47,52 @@ jobs:
           else
             echo "Modified Jupyter notebooks in this push:"
             echo "$CHANGED_NOTEBOOKS"
+            echo "$CHANGED_NOTEBOOKS" >> changed_notebook.txt
           fi
-          echo "changed_notebooks=$CHANGED_NOTEBOOKS" >> $GITHUB_ENV
-
+          CHANGED_DATASET=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '\.csv$')
+          set -e  # Turn back on exit immediately
+          if [ -z "$CHANGED_DATASET" ]; then
+            echo "No Datasets have been modified in this push."
+          else
+            echo "Modified Datasets  in this push:"
+            echo "$CHANGED_DATASET"
+            echo "$CHANGED_DATASET" >> changed_dataset.txt
+          fi
       
       - name: Upload Dataset and Source Code to GCS Bucket
         run: |
-         echo "Uploading Dataset ..."
-         cd  ${GITHUB_WORKSPACE}/dataset/  
-         gsutil cp *.csv gs://${{ env.GCS_SOURCE }}/dataset/
-         echo "Successfully uploaded Dataset ..."
-         echo "Uploading Source Code (Jupyter Notebook) ..."
-         cd  ${GITHUB_WORKSPACE}/src/ 
-         gsutil cp ${{ env.changed_notebooks }} gs://${{ env.GCS_SOURCE }}/src/
+            
+            DATASET="changed_dataset.txt"
+            if [[ -f "$DATASET" ]]; then
+              while IFS= read -r line; do
+                  export CURRENT_DATASET="$line"
+                  echo "Processing: $CURRENT_DATASET"
+                  gsutil cp ../dataset/$CURRENT_DATASET gs://${{ env.GCS_SOURCE }}/dataset/  
+              done < "$FILE"  
+
+            else
+              echo "Error: File does not exist."
+            fi
+
+            echo "Successfully uploaded Source Code ..."
+            echo "Uploading Dataset ..."
+            cd  ${GITHUB_WORKSPACE}/dataset/  
+            gsutil cp ../dataset/*.csv gs://${{ env.GCS_SOURCE }}/dataset/
+            echo "Successfully uploaded Dataset ..."
+            echo "Uploading Source Code (Jupyter Notebook) ..."
+            
+            FILE="changed_notebook.txt"
+            if [[ -f "$FILE" ]]; then
+              while IFS= read -r line; do
+                  export CURRENT_LINE="$line"
+                  echo "Processing: $CURRENT_LINE"
+                  gsutil cp ../src/$CURRENT_LINE gs://${{ env.GCS_SOURCE }}/src/  
+              done < "$FILE"  
+
+            else
+              echo "Error: File does not exist."
+            fi
+            echo "Successfully uploaded Source Code ..."
 
       # - name: Execute Jupyter Notebook on Vertex AI
       #   id: notebook-review
