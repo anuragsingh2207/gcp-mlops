@@ -37,20 +37,10 @@ jobs:
         with:
           version: '>= 363.0.0'
 
-      - name: Locate jupyter Notebook
-        run: |
-          pwd
-          cd src/
-          pwd
-          ls -al
-
-
-
       - name: Execute Jupyter Notebook on Vertex AI
-        id: notebook-review
         uses: google-github-actions/run-vertexai-notebook@v0.0.5
         with:
             gcs_source_bucket: ${{ env.GCS_SOURCE }}
             gcs_output_bucket: ${{ env.GCS_OUTPUT }}
-            allowlist: Salary_Linear_Regression.ipynb
+            allowlist: ${GITHUB_WORKSPACE}/src/Salary_Linear_Regression.ipynb
             region: us-east1
