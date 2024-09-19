@@ -42,5 +42,5 @@ jobs:
         with:
             gcs_source_bucket: ${{ env.GCS_SOURCE }}
             gcs_output_bucket: ${{ env.GCS_OUTPUT }}
-            allowlist: ${GITHUB_WORKSPACE}/src/Salary_Linear_Regression.ipynb
+            allowlist: src/Salary_Linear_Regression.ipynb
             region: us-east1
