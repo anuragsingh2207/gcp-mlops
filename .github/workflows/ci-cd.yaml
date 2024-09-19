@@ -6,8 +6,8 @@ on:
     # - '*.ipynb'
   
 env:
-  GCS_SOURCE: "vocal-partition-435815-p8-source-bucket"
-  GCS_OUTPUT: "vocal-partition-435815-p8-output-bucket"
+  GCS: "vocal-partition-435815-p8-vertex-ai"
+  
   
 jobs:
   jupyter-notebook-cicd:
